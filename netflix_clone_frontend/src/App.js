@@ -1,48 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import "./App.css";
+import TopNav from "./modules/TopNav";
+import SideNav from "./modules/SideNav";
+import Home from "./modules/Home";
+import VideoPlayer from "./modules/VideoPlayer";
+import Search from "./modules/Search";
+import ProfileMenu from "./modules/ProfileMenu";
+import Login from "./modules/Login";
+import Register from "./modules/Register";
+import Account from "./modules/Account";
+import Subscription from "./modules/Subscription";
+import WatchHistory from "./modules/WatchHistory";
+import ParentControl from "./modules/ParentControl";
+import { useAuth } from "./modules/AuthContext";
 
 // PUBLIC_INTERFACE
 function App() {
-  const [theme, setTheme] = useState('light');
+  // Implements layout shell, routing and theme switch
+  const { isAuthenticated } = useAuth();
+  const [theme, setTheme] = React.useState("light");
 
-  // Effect to apply theme to document element
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
-  // PUBLIC_INTERFACE
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-  };
-
   return (
-    <div className="App">
-      <header className="App-header">
-        <button 
-          className="theme-toggle" 
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-        </button>
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
-          Current theme: <strong>{theme}</strong>
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="app-root">
+        <TopNav theme={theme} onThemeChange={setTheme} />
+        <div className="main-layout">
+          {isAuthenticated && <SideNav />}
+          <main className="main-view">
+            <Routes>
+              <Route path="/" element={isAuthenticated ? <Home /> : <Navigate replace to="/login" />} />
+              <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <Login />} />
+              <Route path="/register" element={isAuthenticated ? <Navigate to="/" /> : <Register />} />
+              <Route path="/search" element={isAuthenticated ? <Search /> : <Navigate to="/login" />} />
+              <Route path="/video/:videoId" element={isAuthenticated ? <VideoPlayer /> : <Navigate to="/login" />} />
+              <Route path="/profiles" element={isAuthenticated ? <ProfileMenu /> : <Navigate to="/login" />} />
+              <Route path="/account" element={isAuthenticated ? <Account /> : <Navigate to="/login" />} />
+              <Route path="/subscription" element={isAuthenticated ? <Subscription /> : <Navigate to="/login" />} />
+              <Route path="/history" element={isAuthenticated ? <WatchHistory /> : <Navigate to="/login" />} />
+              <Route path="/parental" element={isAuthenticated ? <ParentControl /> : <Navigate to="/login" />} />
+              <Route path="*" element={<div style={{textAlign:"center"}}>404 - Not Found</div>} />
+            </Routes>
+          </main>
+        </div>
+      </div>
+    </Router>
   );
 }
 
